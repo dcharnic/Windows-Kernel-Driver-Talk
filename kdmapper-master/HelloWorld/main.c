@@ -80,6 +80,7 @@ NTSTATUS CustomDriverEntry(
 		KeBugCheck(0xEF715BAD);					//Tell me what this is talking about after I'm done and I'll give you a sticker
 	}
 	if (var2 == 5) {
+		NTSTATUS Status;
 		KdPrint(("I'm about to hack this dude\n"));
 		// Value that will get written into the program we attack
 		int Writeval = 0xACDC;
@@ -87,12 +88,12 @@ NTSTATUS CustomDriverEntry(
 		PEPROCESS Process;
 		PsLookupProcessByProcessId(13016, &Process); //lookup the process by it's id;
 		// Write "Writeval" to the process in "Process" at the memory address pointed to by the 3rd argument. We are going to be writing a 32 bit int, so our buffer must be that big.
-		KeWriteProcessMemory(Process, &Writeval, 0x8BBE35F9E0, sizeof(__int32));
+		Status = KeWriteProcessMemory(Process, &Writeval, 0x8BBE35F9E0, sizeof(__int32));
 
 		// If everything worked, the program will print out the new value. 
 		DbgPrint("Value of int i: %d", Writeval);
 
-		return STATUS_SUCCESS;
+		return Status;
 	}
 	//Return 0, this code is equivalent to NTSTATUS SUCCESS OR 0X0
 	return 0;
