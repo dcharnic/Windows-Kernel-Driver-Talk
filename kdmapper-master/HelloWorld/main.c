@@ -9,7 +9,7 @@
 // PreviousMode is the mode we are calling from, we are calling from kernel Here. 
 // ReturnSize is the size of the bytes that were successfully copied. If this doesn't match BufferSize, something broke.
 
-// MmCopyVirtualMemory can also be used to read memory addresses. See if you can create a new function that reads memory at an address. Use KeWriteProcessMemory as a template. It shouldn't be that different. 
+// MmCopyVirtualMemory can also be used to read memory addresses. See if you can create a new function that reads memory at an address. Use KeWriteProcessMemory as a template. It wont be very different. 
 NTSTATUS NTAPI MmCopyVirtualMemory(
 	PEPROCESS SourceProcess,
 	PVOID SourceAddress,
