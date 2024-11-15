@@ -1,6 +1,45 @@
 Overview: The talk I'm about to give will give a simplified look at kernel level debugging on windows. It will first cover basic kernel structures and types, then move on to an overview of debugging a driver with windbg and titanhide. 
 Why this matters: This matters because Windows is the most widely used desktop operating system in the world, and the capability to write secure and function drivers for programs and hardware is an important field.
-1. Kernel fundamentals.
+1. Windows fundamentals. 
+	a. Processes
+		i. What is a process?
+			1. A process is an application running in memory.
+			2. Processes can have many forms but the ones you've seen the most are (.exe)(s)
+			3. Processes have at least one thread.
+				a. A thread is a set of machine code instructions that the processor executes.
+				b. A process can have more than one thread, each working simultaneously.
+				c. You've probably heard of the term "Multi-Threading"
+				d. This is when a process implements multiple threads to work simultaneously and report back once they finish their task.
+			4. Processes can also have many handles.
+				a. A handle is a reference to something, a section of memory, a mutex, a pipe, etc. 
+				b. Handles are useful because they are like names for objects, rather than actual locations.
+				c. If a process wants to get the memory location of the object they want, they resolve the handle, this gives the process a pointer to the object.
+				d. Why is this useful?
+					i. This is useful because it allows the system to move objects around to different memory locations.
+					ii. The system is allowed to move the actual object wherever it wants as long as it makes sure that the handle will still point to the object in memory.
+					iii. This is useful because it can defragment memory when many objects are loaded into memory
+					iv. For the process, all it has to do is resolve the handle and boom it has a pointer to its object, it doesn't have to worry about the shuffling going on behind the scenes.
+	b. Objects.
+		i. Objects are things in memory.
+		ii. Quite literally things, an object can be anything, a picture, a string, a section of memory.
+		iii. Most objects have handles.
+		iv. Most of the time user mode processes don't need to use objects.
+		v. Objects are mainly used to call kernel mode code.
+		vi. The process can use the handle of the kernel object to call kernel mode code without stepping into kernel mode itself.
+		vii. There is also an object manager which allows programs to resolve their object's handles to actual addresses
+	c. Context switching.
+		i. Context switching is a concept on windows where threads are momentarily suspended and their context is saved so the cpu can work on a different thread with a higher execution level.
+		ii. This concept allows the CPU to switch between multiple threads very quickly.
+		iii. The process itself is simple. Suspend execution on one thread, save its registers, load a different threads context, and continue on that different thread.
+		iv. There are many ways the system decides if it wants to suspend execution on a thread, but the main way is if the thread itself relinquishes execution while it waits for something, a sync object or a sleep call.
+		v. The system can force a thread to switch if a higher priority level thread needs to be executed.
+	d. The registry
+		i. A very oversimplified explanation of the Windows registry is that is a place where things can store variables or configurations.
+		ii. The registry is made up of a couple of hives: HKEY_CLASSES_ROOT, HKEY_CURRENT_USER, etc.
+		iii.  Each hive is made up of keys (folders), there are thousands of keys
+		iv. Each key can contain other keys or values, these values contain a value of their specified data type, REG_STRINGS contain strings, REG_DWORDS contain Dwords, etc.
+		v. Each application can choose how it wants to store its configuration, most choose registry keys but sometimes portable programs will use a different method, .xml files, .ini files, etc.
+2. Kernel fundamentals.
 	a. What is the kernel?
 		i. The kernel is the heart of the windows operating system.
 		ii. It has access to the entire system and provides the core functionality that the rest of the system uses.
@@ -43,8 +82,8 @@ Why this matters: This matters because Windows is the most widely used desktop o
 		ii. Virtual memory
 			1. Virtual memory is a Windows concept designed to isolate and protect the programs and data on your computer.
 			2. Each process in user mode is given a virtual address space and allowed to operate freely within that space. It may not leave that space.
-			3. The kernel has one virtual address space that it shares, each driver / application in kernel mode has the same space. 
-2. Setting up a debugger and a debuggee.
+			3. The kernel has one virtual address space that it shares, each driver / application in kernel mode has the same space.
+3. Setting up a debugger and a debuggee.
 	a. General overview.
 		i. The general idea behind kernel debugging is that you have 2 computers, a debugger and a debuggee. The debugger observes the control flow of an application or a driver on the debugee. 
 		ii. The process is typically done with 2 physical computers to simplify setup, however the same setup is achievable using a virtual machine. 
@@ -91,7 +130,7 @@ Why this matters: This matters because Windows is the most widely used desktop o
 				e. Then run "kdnet.exe [hostname] 50001"
 				f. That will generate something like windbg -k net:port=50001,key=we45ksfkemt.pogwzqlconuq.2pcacr4sd996t.914zrfnosz3v
 				g. Save that for later.
-			5. Start   debugging.
+			5. Start debugging.
 				a. On your host machine, open windbg click file and then click Attach to kernel
 				b. Specify the port 50001
 				c. Specify the key (we45ksfkemt.pogwzqlconuq.2pcacr4sd996t.914zrfnosz3v for me)
@@ -111,7 +150,7 @@ Why this matters: This matters because Windows is the most widely used desktop o
 				d. To load a module use ld [module]
 				e. To view loaded modules use lm
 				f. To examine objects use dt [object] nt!_FILE_OBJECT
-3. Debugging a driver
+4. Debugging a driver
 	a. First lets go over some common uses for kernel level debugging
 		i. The most common usage for this is to test your drivers for devices and applications
 		ii. The second usage is to bypass some anti-debug checks from programs that run in user mode
@@ -136,16 +175,54 @@ Why this matters: This matters because Windows is the most widely used desktop o
 			4. In short, if you want to stop a kernel driver, you have to reboot your system.
 			5. Another issue with this is if you are trying to build your driver, your linker cannot write to the file because kernel drivers cannot be modified / deleted while they are running.
 			6. You have to specify a different path for your linker to build to if you have already loaded your driver. 
-
 	c. Running the driver
 		i. Now that my driver is installed. I can start it with sc start HelloWorld
 		ii. This driver contains an int3 breakpoint, if you run it without the debugger, you will need to connect your debugger or reboot your vm
 		iii. We can see in windbg once the int3 breakpoint is hit, the driver stops execution and waits for the debugger to resume. 
-		iv. Once ex		
 		iv. The difficult part, stopping the driver.
 			1. If this driver was a usermode driver I could easily stop / restart the driver all day long (Due to usermode drivers not being essential)
 			2. Because this driver is a kernel driver, it is special, it cannot be unloaded or restarted without very special cleanup.
 			3. Most kernel drivers are not designed to be stopped. They are loaded at boot and sit in memory until they are interfaced with, they don't get unloaded just because nothing is using them.
 			4. In short, if you want to stop a kernel driver, you have to reboot your system.
 			5. Another issue with this is if you are trying to build your driver, your linker cannot write to the file because kernel drivers cannot be modified / deleted while they are running.
-			6. You have to specify a different path for your linker to build to if you have already loaded your driver. 
+			6. You have to specify a different path for your linker to build to if you have already loaded your driver.
+		v. Luckily, there's a way around this.
+			1. If we use a program called kdmapper, we can map our driver into the memory of another vulnerable driver. 
+			2. This along with using a predefined template, allows us to load and unload our driver when it finishes execution.
+			3. This is a technique commonly seen in video game hacking.
+	d. Now that we've gone over using the driver, let's step through it.
+		(DO NOT RUN ANY OF THIS ON YOUR HOST COMPUTER, THE CODE COULD CAUSE IRREPARIABLE DAMAGE TO YOUR COMPUTER. I AM NOT RESPONSIBLE IF YOU DAMAGE YOUR COMPUTER WITH THIS CODE.)
+		i. Using the driver uploaded to my GitHub, download it and printloop onto your guest computer. 
+		ii. We can see a couple of things, the most important part of the program is the control flow based on what var 2 is. 
+		iii. Lets walk through it. If you'd like to follow along dynamically, set the variable to the one you want, build it, then find the HelloWorld.sys file and run it with KdMapper.
+		iv. Leaving var 2 alone will cause the program to print out the address of var2. 
+		v. See how the address is above 0x80000000? That's because the driver and all of it's variables and objects are loaded into the kernel address space we talked about before.
+		vi. That's cool, but let's change var2 to the integer 4.
+		vii. The program will print something to your debugger if you have it attached, and then bluescreen with the error code provided.
+		viii. That's an example bluescreen, we told the kernel to panic. There are other ways to trigger a bluescreen but this is the safest way for this.
+		ix. Now let's set var2 to be the integer 5.
+		x. Before we can build and run this program, we need to make some changes.
+		xi. Normally we would write our kernel driver, and then interface with it from usermode using IOCTL codes. Those are a little out of scope for this presentation so we'll just hardcode the values we need.
+		xii. In order to find which values need to be hard coded, we'll start the program "PrintLoop"
+		xiii. This will print a pid and an address for us to attack in our kernel driver. Replace the values in the kernel driver with the ones printed by printloop and run the driver using kdmapper --free HelloWorld.sys
+5. Why does any of this matter?
+	a. As many of you have probably noticed, running these drivers requires you to disable a lot of security features, and you must already have access to an admin account.
+	b. In terms of privilege escalation, we've already started pretty high up in the chain, we don't have a whole lot left to go. 
+	c. This isn't inline with the typical pwn scenarios we see all the time. Where we start with something that is untrusted and work our way up, typically to a shell.
+	d. These drivers with this setup are designed to bypass anti-debug checks in programs running in user mode on your computer. The programs we would be attempting to bypass are typically DMCA protections and Anti-Cheats
+	e. Neither of these are legal so DO NOT attempt to do so.
+	f. These programs implement checks to ensure the memory they use is not touched, and some of those checks include listening for calls to writeMemory or readMemory in their memory spaces.
+	g. These are the user mode calls, not the kernel mode calls.
+	h. We can bypass them by making our bypass call the kernel mode function, not the user mode one. The user mode program cannot see what is going on at a kernel level (Without implementing kernel level protections)
+	i. This is where some people have started to get smart with their protections. Certain companies cough *Riot* *Faceit* *Adobe* implement kernel level checking to ensure that nothing is messing with their data.
+	j. The problem with this is when you write a bad kernel driver, you get bluescreens. And in the case of a company like CrowdStrike, you get 8.5 million of them.
+	k. Microsoft is looking to push everyone away from kernel level access. They don't want anyone touching the sensitive components of the os.
+	l. This is good for everyone, Anti-Cheat developers will not feel the need to implement kernel level checks because they can rest assured the cheaters wont be operating there.
+	m. The current problem with kernel level protections, is that these companies must have access to EVERYTHING running on your computer to ensure you aren't tampering with their software.
+	n. This is a security risk because each company is now responsible for maintaining rootkit access to millions of computers. 
+	o. 30 million faceit players, More than 33 million valorant and LoL players, and countless Adobe users just to name a few. Not to mention the critical systems that rely on software like Crowd strike to protect them.
+	p. Not to mention that valorant's kernel level anti cheat runs in a virtual machine, meaning all but the 3 people who know RE well enough, don't know what it is actually doing on your computer.
+	m. And it means that if someone writes bad code, we wont have another major outage.
+
+
+
