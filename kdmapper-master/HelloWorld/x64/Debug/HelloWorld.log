@@ -1,0 +1,6 @@
+﻿  Building 'HelloWorld' with toolset 'WindowsKernelModeDriver10.0' and the 'Universal' target platform.
+  main.c
+C:\Users\Dylan\Desktop\kdmapper-master\HelloWorld\main.c(73,30): warning C4022: 'PsLookupProcessByProcessId': pointer mismatch for actual parameter 1
+C:\Users\Dylan\Desktop\kdmapper-master\HelloWorld\main.c(75,44): warning C4022: 'KeWriteProcessMemory': pointer mismatch for actual parameter 3
+  HelloWorld.vcxproj -> C:\Users\Dylan\Desktop\kdmapper-master\HelloWorld\x64\Debug\HelloWorld.sys
+  Driver is 'Universal'.
