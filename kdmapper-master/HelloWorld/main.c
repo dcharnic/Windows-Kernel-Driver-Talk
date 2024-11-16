@@ -51,7 +51,7 @@ NTSTATUS CustomDriverEntry(_In_ PDRIVER_OBJECT  kdmapperParam1, _In_ PUNICODE_ST
 		// Place the address output by PrintLoop here
 		PVOID addr = 0x000000536B58F890;
 		PsLookupProcessByProcessId(pid, &proc); //lookup the process by it's id;
-		// Write "Writeval" to the process in "Process" at the memory address pointed to by "addr". We are going to be writing a 32 bit int, so our buffer must be that big.
+		// Write "num" to the process in "Process" at the memory address pointed to by "addr". We are going to be writing a 32 bit int, so our buffer must be that big.
 		NTSTATUS Status = KeWriteProcessMemory(proc, &num, addr, sizeof(__int32));
 		return Status;
 	}
