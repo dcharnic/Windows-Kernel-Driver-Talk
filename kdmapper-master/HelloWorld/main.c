@@ -1,15 +1,15 @@
 #include <ntddk.h>
 
 // This defines the no-doc MemCopy function in NTAPI
-// SourceProcess is the process that is calling the function
-// SourceAddress is the address we want to copy from
-// TargetAddress is the address we are going to place our copied memory into
-// BufferSize is the size of memory to copy
-// PreviousMode is the mode we are calling from, we are calling from kernel Here. 
-// ReturnSize is the size of the bytes that were successfully copied. If this doesn't match BufferSize, something broke.
+// SourceP is the process that is calling the function
+// SourceA is the address we want to copy from
+// TargetA is the address we are going to place our copied memory into
+// BufferS is the size of memory to copy
+// Mode is the mode we are calling from, we are calling from kernel Here. 
+// Size is the size of the bytes that were successfully copied. If this doesn't match BufferSize, something broke.
 
 // MmCopyVirtualMemory can also be used to read memory addresses. See if you can create a new function that reads memory at an address. Use KeWriteProcessMemory as a template. It wont be very different. 
-NTSTATUS NTAPI MmCopyVirtualMemory(PEPROCESS sourceP, PVOID sourceA, PEPROCESS targetP, PVOID targetA, SIZE_T buffer, KPROCESSOR_MODE mode, PSIZE_T Size);
+NTSTATUS NTAPI MmCopyVirtualMemory(PEPROCESS sourceP, PVOID sourceA, PEPROCESS targetP, PVOID targetA, SIZE_T BufferS, KPROCESSOR_MODE mode, PSIZE_T Size);
 
 // Just defining another function
 // This one places a PEPROCESS* into the the value that is passed in as Process when we give the function a PID.
