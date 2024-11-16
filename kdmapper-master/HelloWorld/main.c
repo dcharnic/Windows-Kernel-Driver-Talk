@@ -27,8 +27,6 @@ NTSTATUS KeWriteProcessMemory(PEPROCESS P, PVOID SourceA, PVOID TargetA, SIZE_T 
 // This is the code that gets run when the driver gets loaded, like Main()
 NTSTATUS CustomDriverEntry(_In_ PDRIVER_OBJECT  kdmapperParam1, _In_ PUNICODE_STRING kdmapperParam2) {
 	//These are parameters passed to entry by kdMapper, we dont need them so we'll mark them as unreferenced
-	//UNREFERENCED_PARAMETER(kdmapperParam1);
-	//UNREFERENCED_PARAMETER(kdmapperParam2);
 
 	//Defines an int3 breakpoint, will be caught by the debugger.
 	DbgBreakPoint();
