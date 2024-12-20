@@ -42,7 +42,7 @@ NTSTATUS CustomDriverEntry(_In_ PDRIVER_OBJECT  kdmapperParam1, _In_ PUNICODE_ST
 	}
 	if (var2 == 5) {
 		KdPrint(("I'm about to hack this dude"));
-		// Create a new PEPROCESS type to store the pointer to the process we are attacking
+		// Create a new PEPROCESS to store the process we are attacking
 		PEPROCESS proc;
 		// Value that will get written into the program we attack
 		int num = 0xACDC;
