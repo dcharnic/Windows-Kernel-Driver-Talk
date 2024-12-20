@@ -11,5 +11,4 @@ The driver is located in the /kdmapper-master/HelloWorld folder, main.c.
 Open the .sln in visual studio and build it for x64 release. 
 
 # Building PrintLoop
-Its a c++ program, you can open the .sln file in Visual Studio and build it or you can just build it directly with cmake, whatever you want. Just get it to run
-s
+Its a c++ program, you can open the .sln file in Visual Studio and build it or you can just build it directly with cmake, whatever you want as long as it runs.
