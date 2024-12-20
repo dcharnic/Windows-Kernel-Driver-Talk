@@ -2,7 +2,8 @@
 The files I used in my Windows Kernel Talk
 
 # Building and running the driver
-In order to build this driver, you need visual studio, spectre mitigated libs, winddk and winsdk. 
+In order to build this driver, you need to install visual studio with spectre mitigated libs, winddk and winsdk. These can all be found on Microsoft's website for Windows kernel debugging. 
+https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-
 
 The driver is located in the /kdmapper-master/HelloWorld folder, main.c. 
 
